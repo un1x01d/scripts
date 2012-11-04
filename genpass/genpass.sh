@@ -21,7 +21,7 @@ read -p "Enter Encryption Email:" encuser
 CURRENT=`grep $username /etc/shadow | awk -F: '{print $2}'` 
 
 # create a password file and encrypt it
-echo $PW > pw_file ; gpg -r $encuser -e pw_file ; rm -f pw_file 
+echo $PW > pw_file ; gpg -r $encuser -e pw_file > /dev/null 2>&1 ; rm -f pw_file 
 
 # Change the password for the user
 sed -i "s#$CURRENT#$NEWHASH#" /etc/shadow
