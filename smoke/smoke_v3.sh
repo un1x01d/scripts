@@ -1,24 +1,36 @@
 #!/bin/bash
 
 . lib/ascii.sh
+. lib/config.sh
 
 printf "\033c"
 
 OZ=28
-bgmusic="http://www.youtube.com/watch?v=m2QoJqBdfGE"
-
 tracklist="lib/tracks.txt"
 
 readlinks() {
 	if [ -e $tracklist ]
 		then 
 			cat $tracklist
-			read -p "Select Song:" tracknum
+			read -p "Select Song, Select R for Random:" tracknum
+				if [ $tracknum = "R" ]
+					then 	
+						tracknum=$(shuf -n 1 $tracklist | awk '{print $1}' | sed 's/\.//')
+						
+				fi
 		else
 			echo "ERROR: Tracks File missing \"$tracklist\""
 	fi
 	    }
 
+play() {
+	
+		$MPLAYER -x 640 -y 360 -nocache -cookies -cookies-file /tmp/cookie.txt $(youtube-dl -g --cookies /tmp/cookie.txt "$selectedurl") > /dev/null &
+	}
+
+
+
+check_mplayer
 
 
 read -p "How much do you have (in OZ)? " totalw
@@ -30,9 +42,10 @@ echo "You have $totalw Oz of weed, This should be enough for $total_hits Hits!"
 			then echo "Damn! you got a lot of weed, this will require some background music!!"
 				sleep 2
 					readlinks
-					selectedtrack=$(awk "NR==$tracknum" $tracklist | awk '{print $2}')
-					echo "Playing $selectedtrack"
-				google-chrome $selectedtrack >> /dev/null
+					selectedurl=$(awk "NR==$tracknum" $tracklist | awk '{print $2}')
+					selectedtrack=$(awk "NR==$tracknum" $tracklist | awk -F' - ' '{print $2" - "$3}')
+							echo "Playing: $selectedtrack" 
+						play
 		fi
 	sleep 2
 echo "Spark" ; sleep 1 ; clear
@@ -52,3 +65,4 @@ while [ ! $COUNTER = $totalw_gr ] ; do
 		sleep 1
 		printf "\033c"
 done 
+
