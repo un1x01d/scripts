@@ -1,7 +1,7 @@
 #!/bin/bash
 
 JUMP="ash.functionxinc.net"
-PORT=9091
+PORT=9092
 
 if [ -z $1  ] 
 	then 
@@ -15,4 +15,4 @@ fi
 
 echo "TUNNEL: to $TARGET over $JUMP on local port $PORT"
 
-ssh -L9091:$TARGET.mgmt:9090 $JUMP -NCf
+ssh -L9092:$TARGET.mgmt:9090 $JUMP -NCf
