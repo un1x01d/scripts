@@ -2,21 +2,66 @@
 
 require 'speech'
 require 'timeout'
+require 'json'
+require "festivaltts4r"
 
-p "Speak! it's record."
-sleep(1)
+"Hi, My name is Konstantin Zaliznyak".to_speech
+
+#Name
+"What is your name?".to_speech
+sndfile = "tmp/name.wav" 
 pid = fork do 
-	exec "./record.py"
+	exec "./record.py #{sndfile}"
 end
 
-sleep(5)
-p pid
+p "recording ..."
+
+sleep(2)
 Process.kill("TERM", pid)
 Process.wait pid
 
+file = "#{sndfile}"
+audio = Speech::AudioToText.new("#{file}")
+
+name = audio.to_text
+
 sleep(1)
 
-file = "test.wav"
-#file = ARGV[0]
+#Area
+"What area are you looking at?".to_speech
+sndfile = "tmp/area.wav" 
+pid = fork do 
+	exec "./record.py #{sndfile}"
+end
+p "recording ..."
+
+sleep(2)
+Process.kill("TERM", pid)
+Process.wait pid
+
+file = "#{sndfile}"
 audio = Speech::AudioToText.new("#{file}")
-puts audio.to_text.inspect
+
+area = audio.to_text
+
+#Bedrooms
+"How Many Bedrooms?".to_speech
+sndfile = "tmp/bdrm.wav" 
+pid = fork do 
+	exec "./record.py #{sndfile}"
+end
+
+p "recording ..."
+
+sleep(2)
+Process.kill("TERM", pid)
+Process.wait pid
+
+file = "#{sndfile}"
+audio = Speech::AudioToText.new("#{file}")
+
+bdrooms = audio.to_text
+
+puts "Name: #{name}"
+puts "Area: #{area}"
+puts "Bedrooms: #{bdrooms}"
