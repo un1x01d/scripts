@@ -1,5 +1,6 @@
 #!/usr/bin/python2.7
 import alsaaudio, wave, numpy
+from time import sleep
 
 card = 'sysdefault:CARD=1'
 
@@ -14,8 +15,6 @@ w.setnchannels(1)
 w.setsampwidth(2)
 w.setframerate(44100)
 
-while True:
+while True:	
     l, data = inp.read()
-    a = numpy.fromstring(data, dtype='int16')
-    print numpy.abs(a).mean()
     w.writeframes(data)
