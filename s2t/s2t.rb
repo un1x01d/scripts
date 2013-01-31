@@ -14,7 +14,7 @@ pid = fork do
 	exec "./record.py #{sndfile}"
 end
 
-p "recording ..."
+p "recording name ..."
 
 sleep(2)
 Process.kill("TERM", pid)
@@ -33,7 +33,7 @@ sndfile = "tmp/area.wav"
 pid = fork do 
 	exec "./record.py #{sndfile}"
 end
-p "recording ..."
+p "recording area ..."
 
 sleep(2)
 Process.kill("TERM", pid)
@@ -51,7 +51,7 @@ pid = fork do
 	exec "./record.py #{sndfile}"
 end
 
-p "recording ..."
+p "recording bedrooms..."
 
 sleep(2)
 Process.kill("TERM", pid)
