@@ -2,7 +2,6 @@
 
 require 'speech'
 require 'timeout'
-require 'json'
 require "festivaltts4r"
 
 def record_s(filename)
