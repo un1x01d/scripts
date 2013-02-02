@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 
 require 'digest/sha2'
+require 'ruby_gpg'
 
 raise 'Must run as root' unless Process.uid == 0
 
@@ -54,6 +55,20 @@ def rep_hash
 	File.open(shadowfile, "w") { |file| file << puts }
 end
 
+def enc_pass 
+	outfile = ".pw" 
+	open("#{outfile}", 'w') { |f|
+	  f.puts "#{$pw}"
+	}
+
+	RubyGpg.encrypt("#{outfile}", "zedchel@gmail.com")
+		File.delete("#{outfile}")
+		File.rename "#{outfile}.gpg", "#{$user}_#{outfile}.gpg"[1..-1] 
+end
+
+
+
+
 ver_int
 ver_length
 gen_hash
@@ -61,10 +76,12 @@ get_hash
 rep_hash
 
 # Output file to password and encrypt
-outfile = "pw_list" 
-open("#{outfile}", 'w') { |f|
-  f.puts "#{$pw}"
-}
+#$outfile = "pw_list" 
+#open("#{$outfile}", 'w') { |f|
+#  f.puts "#{$pw}"
+#}
+
+enc_pass
 
 
 puts "User: #{$user}"
