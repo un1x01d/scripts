@@ -2,11 +2,14 @@
 
 require 'digest/sha2'
 
+raise 'Must run as root' unless Process.uid == 0
+
 print "Username:"
 $user = gets.chomp
 
 print "Password Length:"
 $pwlength = gets.chomp.to_i
+
 
 def ver_int()
 	if ! $pwlength.is_a? Integer
