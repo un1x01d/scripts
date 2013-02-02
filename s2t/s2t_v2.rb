@@ -46,29 +46,3 @@ trooms = convert_to_text("rooms")
 puts "Name: #{tname}"
 puts "Area: #{tarea}"
 puts "Bedrooms: #{trooms}"
-
-
-#sndfile = "tmp/output.wav" 
-#pid = fork do 
-#	exec "./record.py #{sndfile}"
-#end
-
-#"What area are you looking at?".to_speech
-#sleep(1)
-
-#"How many bedrooms?".to_speech
-#sleep(1)
-
-#Process.kill("TERM", pid)
-#Process.wait pid
-
-#file = "#{sndfile}"
-#audio = Speech::AudioToText.new("#{file}")
-
-#output = audio.to_text
-
-#puts output
-
-#puts "Name: #{name}"
-#puts "Area: #{area}"
-#puts "Bedrooms: #{bdrooms}"
