@@ -10,6 +10,7 @@ $user = gets.chomp
 
 print "Password Length:"
 $pwlength = gets.chomp.to_i
+
 print "Recipient:"
 $recipient = gets.chomp
 
