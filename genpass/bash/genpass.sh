@@ -1,6 +1,7 @@
 #!/bin/bash
-# Password generator and encrypter v0.1
-#
+# Password generator and encrypter
+# By ZeD
+
 # Generate new password and hash it as sha512
 PW=`tr -cd '[:alnum:]' < /dev/urandom | fold -w12 | head -n1`
 NEWHASH=`python lib/hashpw.py -6 -p $PW | awk '{print $2}'` 
