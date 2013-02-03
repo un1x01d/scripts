@@ -5,8 +5,25 @@
 
 SEARCH=""
 
+
+NORMAL=$(tput sgr0)
+GREEN=$(tput setaf 2; tput bold)
+YELLOW=$(tput setaf 3)
+RED=$(tput setaf 1)
+
+function red() {
+    echo -e "$RED$*$NORMAL"
+}
+function green() {
+    echo -e "$GREEN$*$NORMAL"
+}
+function yellow() {
+    echo -e "$YELLOW$*$NORMAL"
+}
+
+
 usage() {
-	echo "Usage: $0 -j [jumphost] -t [target] -p [remote port] -l [localport] -u [username] || Use $0 -x for interactive"
+	red "Usage: $0 -j [jumphost] -t [target] -p [remote port] -l [localport] -u [username] || Use $0 -x for interactive"
 }
 
 while getopts “hu:j:l:p:t:x” OPTION
@@ -48,4 +65,4 @@ fi
 
 ssh -l $USERNAME -L$LPORT:$TARGET:$RPORT $JUMP -NCf
 
-echo "TUNNEL: to $TARGET over $JUMP now listening on local port $PORT"
+green "TUNNEL: to $TARGET over $JUMP now listening on local port $PORT"
