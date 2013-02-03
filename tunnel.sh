@@ -1,24 +1,51 @@
 #!/bin/bash
+# Script that creates ssh tunnels
+# By ZeD
+# The license is simple - enjoy the script and modify as you wish, feedback is appriciated.
 
-JUMP=""
-PORT=9092
+SEARCH=""
 
-if [ -z $JUMP ]
-	then 
-		echo "ERROR: Jump host is not set"
+usage() {
+	echo "Usage: $0 -j [jumphost] -t [target] -p [remote port] -l [localport] -u [username] || Use $0 -x for interactive"
+}
+
+while getopts “hu:j:l:p:t:x” OPTION
+do
+	case $OPTION in
+		h) usage
+			exit 1
+		;;
+		j) JUMP=$OPTARG
+		;;
+		l) LPORT=$OPTARG
+		;;
+		p) RPORT=$OPTARG
+		;;
+		t) TARGET=$OPTARG
+		;;
+		u) USERNAME=$OPTARG
+		;;
+		x)
+			read -p "JumpHost to use ?:" JUMP
+			read -p "Host to connect to ?:" TARGET
+			read -p "Remote port to connect to ?:" RPORT
+			read -p "Local port to bind to ?:" LPORT
+			read -p "Uusername to use ?: " USERNAME
+		;;
+	esac
+done
+
+if [[ -z $JUMP ]] || [[ -z $TARGET ]] || [[ -z $LPORT ]]
+	then
+		usage
+		exit 1
 fi
 
-if [ -z $1  ] 
+if [ ! -z $SEARCH ]
 	then 
-		read -p "Which Host to connect to ?:" TARGET 
-		read -p "Which local port to use ? :" PORT
-
-	else 
-		TARGET=$1
-		PORT=$2
+		TARGET="$TARGET.$SEARCH"
 fi
 
-echo "TUNNEL: to $TARGET over $JUMP on local port $PORT"
+ssh -l $USERNAME -L$LPORT:$TARGET:$RPORT $JUMP -NCf
 
-ssh -L9092:$TARGET.mgmt:9090 $JUMP -NCf
-ssh -L9091:$TARGET.mgmt:9090 $JUMP -NCf
+echo "TUNNEL: to $TARGET over $JUMP now listening on local port $PORT"
