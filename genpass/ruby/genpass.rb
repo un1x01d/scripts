@@ -75,12 +75,6 @@ gen_hash
 get_hash
 rep_hash
 
-# Output file to password and encrypt
-#$outfile = "pw_list" 
-#open("#{$outfile}", 'w') { |f|
-#  f.puts "#{$pw}"
-#}
-
 enc_pass
 
 
