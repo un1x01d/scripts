@@ -10,6 +10,8 @@ $user = gets.chomp
 
 print "Password Length:"
 $pwlength = gets.chomp.to_i
+print "Recipient:"
+$recipient = gets.chomp
 
 
 def ver_int()
@@ -29,15 +31,15 @@ def ver_length()
 end
 
 def generate_passwd(length=$pwlength)
-  chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ23456789'
+  chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ23456789!\"#$%&()*+,-./:;<=>?@[]^_{|}~'
   Array.new(length) { chars[rand(chars.length)].chr }.join
 end
 
 # Generate new hash
 def gen_hash 
 	$pw = generate_passwd
-	$salt = rand(36**8).to_s(36)
-	$newhash = $pw.crypt("$6$" + $salt)
+	salt = rand(36**8).to_s(36)
+	$newhash = $pw.crypt("$6$" + salt)
 end
 
 # Get oldhash hash
@@ -61,12 +63,10 @@ def enc_pass
 	  f.puts "#{$pw}"
 	}
 
-	RubyGpg.encrypt("#{outfile}", "RECIPIENT")
+	RubyGpg.encrypt("#{outfile}", "#{$recipient}")
 		File.delete("#{outfile}")
 		File.rename "#{outfile}.gpg", "#{$user}_#{outfile}.gpg"
 end
-
-
 
 
 ver_int
@@ -76,7 +76,6 @@ get_hash
 rep_hash
 
 enc_pass
-
 
 puts "User: #{$user}"
 puts "Password: #{$pw}"
