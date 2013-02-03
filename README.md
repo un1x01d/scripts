@@ -1,4 +1,4 @@
-scripts
+Scripts
 =======
 
 tunnel.sh - Bash wrapper tool to create SSH tunells
