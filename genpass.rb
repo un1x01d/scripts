@@ -56,14 +56,14 @@ def rep_hash
 end
 
 def enc_pass 
-	outfile = ".pw" 
+	outfile = "pw" 
 	open("#{outfile}", 'w') { |f|
 	  f.puts "#{$pw}"
 	}
 
 	RubyGpg.encrypt("#{outfile}", "zedchel@gmail.com")
 		File.delete("#{outfile}")
-		File.rename "#{outfile}.gpg", "#{$user}_#{outfile}.gpg"[1..-1] 
+		File.rename "#{outfile}.gpg", "#{$user}_#{outfile}.gpg"
 end
 
 
