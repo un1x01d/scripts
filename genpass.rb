@@ -61,7 +61,7 @@ def enc_pass
 	  f.puts "#{$pw}"
 	}
 
-	RubyGpg.encrypt("#{outfile}", "zedchel@gmail.com")
+	RubyGpg.encrypt("#{outfile}", "RECIPIENT")
 		File.delete("#{outfile}")
 		File.rename "#{outfile}.gpg", "#{$user}_#{outfile}.gpg"
 end
