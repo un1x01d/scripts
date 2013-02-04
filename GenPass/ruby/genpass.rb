@@ -2,7 +2,6 @@
 
 require 'digest/sha2'
 require 'ruby_gpg'
-require 'ruby-progressbar'
 
 
 raise 'Must run as root' unless Process.uid == 0
