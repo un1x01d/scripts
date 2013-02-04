@@ -2,6 +2,8 @@
 
 require 'digest/sha2'
 require 'ruby_gpg'
+require 'ruby-progressbar'
+
 
 raise 'Must run as root' unless Process.uid == 0
 
@@ -14,6 +16,11 @@ $pwlength = gets.chomp.to_i
 print "Recipient:"
 $recipient = gets.chomp
 
+def inc_bar(inc)
+	inc.times do  
+		$progressbar.increment
+	end
+end
 
 def ver_int()
 	if ! $pwlength.is_a? Integer
@@ -69,13 +76,11 @@ def enc_pass
 		File.rename "#{outfile}.gpg", "#{$user}_#{outfile}.gpg"
 end
 
-
 ver_int
 ver_length
 gen_hash
 get_hash
 rep_hash
-
 enc_pass
 
 puts "User: #{$user}"
