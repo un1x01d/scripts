@@ -1,5 +1,5 @@
 #!/bin/bash
-# Curl Wrapper to test the time it takes for a request to complete
+#### Curl Wrapper to test the time it takes for a request to complete
 # By ZeD
 
 usage() {
