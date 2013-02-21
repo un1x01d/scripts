@@ -1,5 +1,5 @@
 #!/bin/bash
-# Password generator and encrypter
+# Bash Based Password generator and encrypter
 # By ZeD
 
 # Generate new password and hash it as sha512
