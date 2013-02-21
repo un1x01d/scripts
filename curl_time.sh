@@ -1,5 +1,9 @@
 #!/bin/bash
+<<<<<<< HEAD
 ### Curl Wrapper to test the time it takes for a request to complete
+=======
+#### Curl Wrapper to test the time it takes for a request to complete
+>>>>>>> scripts_test_branch
 # By ZeD
 
 usage() {
