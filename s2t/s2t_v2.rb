@@ -1,6 +1,5 @@
 #!/usr/bin/ruby
 
-require 'speech'
 require 'timeout'
 require "festivaltts4r"
 

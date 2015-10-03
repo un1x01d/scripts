@@ -6,6 +6,9 @@ require 'ruby_gpg'
 
 raise 'Must run as root' unless Process.uid == 0
 
+v = '0.1'
+puts "# GenPass v#{v}"
+
 print "Username:"
 $user = gets.chomp
 
