@@ -64,7 +64,7 @@ MACADDRESS=$(generate_mac)
 
 
 if [ ! -z $TARGET ] ; then
-  echo '# Clone XML tempalte' ; cp -v $LAB/xml/$TEMPLATE_XML $LAB/xml/$TARGET.xml >> /dev/null
+  echo '# Clone XML template' ; cp -v $LAB/xml/$TEMPLATE_XML $LAB/xml/$TARGET.xml >> /dev/null
   echo '# Clone Golden image' ; cp -v $LAB/qcow2/$GOLDEN_IMG $LAB/qcow2/$TARGET.qcow2 >> /dev/null
   echo "# Applying parameters to new template ($TARGET.xml)"
 
