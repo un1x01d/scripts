@@ -5,6 +5,7 @@
 
 
 printf "\033c"
+printf "\033c"
 
 OZ=28
 tracklist="lib/tracks.txt"
