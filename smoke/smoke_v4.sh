@@ -11,28 +11,6 @@ OZ=28
 tracklist="lib/tracks.txt"
 
 
-#function check_livestreamer() {
-#	get_os
-#	LIVESTREAMER="/usr/bin/livestreamer"
-#	if [ ! -a $LIVESTREAMER ]
-#		then read -p "Livestreamer is not installed! (y/n) [Default:y]" install_response
-#				case $install_response in 
-#					y)
-#						install_livestreamer	
-#					;;
-#					n)
-#						echo "Livestreamer is required, exiting."
-#							exit 1
-#					;;
-#					*)	
-#						install_livestreamer	
-#					;;
-#				esac
-#
-# 	fi
-#}
-check_livestreamer
-
 readlinks() {
 	if [ -e $tracklist ]
 		then 
@@ -55,7 +33,7 @@ readlinks() {
 	    }
 
 play() {
-		/usr/bin/livestreamer "$selectedurl" best > /dev/null &
+		open -a Google\ Chrome "$selectedurl" >> /dev/null &
 	}
 
 read -p "How much do you have (in OZ)? " totalw
