@@ -4,25 +4,30 @@ import resource
 import signal
 import sys
 import os
+import time
 
-# Define vulnerable server versions for different services
+# Define versions and their typical responses with associated CVEs
 server_versions = {
-    21: "vsftpd 3.0.3",        # Insecure handling of FTP commands (CVE-2021-36159)
-    23: "Telnetd 2.4",         # Weak authentication (CVE-2022-23418)
-    80: "Apache 2.4.49",       # Remote Code Execution (CVE-2021-41773)
-    443: "nginx 1.21.1",       # Potential RCE (CVE-2022-4174)
-    3128: "Squid 4.14",        # Remote Code Execution (CVE-2021-20231)
-    8080: "Apache 2.4.51"      # Remote Code Execution (CVE-2021-41773)
+    21: "vsftpd 3.0.3",        # CVE-2021-36159: Remote code execution due to a backdoor in vsftpd 3.0.3
+    22: "OpenSSH_8.9p1",       # CVE-2022-3095: Remote code execution due to improper input validation in OpenSSH
+    25: "Postfix 3.6.1",       # CVE-2021-26318: Remote code execution via Postfix’s handling of recipient addresses
+    80: "Apache/2.4.51",      # CVE-2021-22905: Remote code execution via mod_proxy's reverse proxy configuration
+    443: "nginx/1.21.6",       # CVE-2022-4174: HTTP/2 frame handling flaw leading to remote code execution
+    123: "ntpd 4.2.8p15",      # CVE-2020-25839: Denial of service via malformed NTP packets
+    3128: "Squid/4.12",        # CVE-2021-20207: Remote code execution due to improper handling of HTTP requests
+    8080: "Squid/4.12"         # CVE-2021-20207: Remote code execution due to improper handling of HTTP requests
 }
 
 # Define a mapping of ports to service names
 port_service_names = {
     21: "ftp",
-    23: "telnet",
+    22: "ssh",
+    25: "smtp",
     80: "http",
     443: "https",
+    123: "ntp",
     3128: "squid-http",
-    8080: "http-proxy"
+    8080: "squid-http"
 }
 
 # List to keep track of open sockets for clean shutdown
@@ -44,21 +49,47 @@ def simulate_service(port):
             conn, addr = s.accept()
             with conn:
                 if port == 21:
-                    # Mimic FTP response with known vulnerability
-                    response = (f"220 {version} Service ready.\r\n").encode('utf-8')
-                elif port == 23:
-                    # Mimic Telnet response with known vulnerability
-                    response = (f"Telnetd: {version}\r\n").encode('utf-8')
-                elif port == 80 or port == 443 or port == 8080 or port == 3128:
-                    # Mimic HTTP/HTTPS/Squid Proxy response with a 404 Not Found
-                    response = (f"HTTP/1.1 404 Not Found\r\n"
-                                f"Content-Type: text/html\r\n"
+                    # Refined FTP response
+                    response = (
+                        f"220 {version} Service ready.\r\n"
+                    ).encode('utf-8')
+                elif port == 22:
+                    # Mimic SSH response with a real version format
+                    response = (
+                        b"SSH-2.0-" +
+                        version.encode('utf-8') +
+                        b"\r\n"
+                    )
+                elif port == 25:
+                    # Mimic SMTP response with a more accurate version format
+                    response = (
+                        b"220 localhost ESMTP " +
+                        version.encode('utf-8') +
+                        b"\r\n"
+                    )
+                elif port == 80:
+                    # Mimic HTTP response
+                    response = (f"HTTP/1.1 200 OK\r\n"
                                 f"Server: {version}\r\n"
-                                f"\r\n"
-                                f"404 Not Found\r\n").encode('utf-8')
-                elif port == 139:
-                    # Mimic NetBIOS response (simplified)
-                    response = b"Server: NetBIOS\r\n"
+                                f"\r\n").encode('utf-8')
+                elif port == 443:
+                    # Mimic HTTPS response
+                    response = (f"HTTP/1.1 200 OK\r\n"
+                                f"Server: {version}\r\n"
+                                f"\r\n").encode('utf-8')
+                elif port == 123:
+                    # Mimic NTP response
+                    response = f"NTP {version} Server Ready\r\n".encode('utf-8')
+                elif port == 3128:
+                    # Mimic Squid HTTP response
+                    response = (f"HTTP/1.1 200 OK\r\n"
+                                f"Server: {version}\r\n"
+                                f"\r\n").encode('utf-8')
+                elif port == 8080:
+                    # Mimic Squid HTTP Proxy response
+                    response = (f"HTTP/1.1 200 OK\r\n"
+                                f"Server: {version}\r\n"
+                                f"\r\n").encode('utf-8')
 
                 conn.sendall(response)
         except Exception as e:
