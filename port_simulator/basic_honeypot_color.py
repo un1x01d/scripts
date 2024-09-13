@@ -4,36 +4,43 @@ import resource
 import signal
 import sys
 import os
+import time
+from colorama import init, Fore, Style
+
+# Initialize colorama
+init()
 
 # Define versions and their typical responses with associated CVEs
 server_versions = {
-    21: "vsftpd 3.0.3",        # CVE-2022-41715: vsftpd 3.0.3 allows remote code execution due to an authentication bypass
-    22: "OpenSSH_8.9p1",       # CVE-2023-38408: OpenSSH 8.9p1 has a privilege escalation vulnerability in the sftp-server
-    25: "Postfix 3.6.1",       # CVE-2023-12345: Postfix 3.6.1 allows remote attackers to execute arbitrary code via crafted email headers
-    80: "Apache/2.4.56",      # CVE-2023-2868: Apache 2.4.56 has a remote code execution vulnerability due to improper handling of request headers
-    443: "nginx/1.23.1",       # CVE-2024-0001: nginx 1.23.1 has a critical vulnerability in HTTP/2 request handling leading to remote code execution
-    123: "ntpd 4.2.8p15",      # CVE-2023-25155: NTP 4.2.8p15 is vulnerable to a denial of service attack via crafted NTP packets
-    3128: "Squid/4.16",        # CVE-2023-29422: Squid 4.16 has a remote code execution vulnerability due to improper handling of HTTP requests
-    8080: "Squid/4.16",        # CVE-2023-29422: Squid 4.16 has a remote code execution vulnerability due to improper handling of HTTP requests
+    22: {"version": "OpenSSH_8.9p1", "cve": "CVE-2022-3095", "type": "Remote Code Execution"},
+    25: {"version": "Postfix 3.6.1", "cve": "CVE-2021-26318", "type": "Remote Code Execution"},
+    80: {"version": "Apache/2.4.51", "cve": "CVE-2021-22905", "type": "Remote Code Execution"},
+    443: {"version": "nginx/1.21.6", "cve": "CVE-2022-4174", "type": "Remote Code Execution"},
+    123: {"version": "ntpd 4.2.8p15", "cve": "CVE-2020-25839", "type": "Denial of Service"},
+    3128: {"version": "Squid/4.12", "cve": "CVE-2021-20207", "type": "Remote Code Execution"},
+    8080: {"version": "Squid/4.12", "cve": "CVE-2021-20207", "type": "Remote Code Execution"}
 }
 
-# Define a mapping of ports to service names
+# Define a mapping of ports to service names and colors
 port_service_names = {
-    21: "ftp",
-    22: "ssh",
-    25: "smtp",
-    80: "http",
-    443: "https",
-    123: "ntp",
-    3128: "squid-http",
-    8080: "squid-http",
+    22: (Fore.MAGENTA + "ssh" + Fore.RESET),
+    25: (Fore.YELLOW + "smtp" + Fore.RESET),
+    80: (Fore.RED + "http" + Fore.RESET),
+    443: (Fore.GREEN + "https" + Fore.RESET),
+    123: (Fore.CYAN + "ntp" + Fore.RESET),
+    3128: (Fore.CYAN + "squid-http" + Fore.RESET),
+    8080: (Fore.CYAN + "squid-http" + Fore.RESET)
 }
 
 # List to keep track of open sockets for clean shutdown
 sockets = []
 
 def simulate_service(port):
-    version = server_versions.get(port, "Unknown")
+    """Simulate a service listening on a given port."""
+    info = server_versions.get(port, {"version": "Unknown", "cve": "N/A", "type": "Unknown"})
+    version = info["version"]
+    cve = info["cve"]
+    cve_type = info["type"]
     service_name = port_service_names.get(port, "Unknown")
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -41,51 +48,53 @@ def simulate_service(port):
     s.bind(('', port))
     s.listen()
     sockets.append(s)  # Add to sockets list for cleanup
-    print(f'Listening on port {port} as {service_name} ({version})')
+
+    # Logging and printing that the port is open
+    message = (
+        f'{service_name} (Version: {version}, {Fore.BLUE}CVE: {cve}{Fore.RESET}, Type: {cve_type})'
+    )
+    print(f'Listening on port {port} as {message}')
 
     while True:
         try:
             conn, addr = s.accept()
             with conn:
-                if port == 21:
-                    # Refined FTP response
-                    response = (
-                        f"220 {version} Service ready.\r\n"
-                    ).encode('utf-8')
-                elif port == 22:
-                    # Mimic SSH response with a real version format
+                # Get current timestamp
+                timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                # Print connection details
+                connection_message = (
+                    f"{timestamp} - Connection from {Fore.CYAN}{addr[0]}:{addr[1]}{Fore.RESET} on port {Fore.CYAN}{port}{Fore.RESET}"
+                )
+                print(connection_message)
+
+                # Handle responses based on port
+                if port == 22:
                     response = (
                         b"SSH-2.0-" +
                         version.encode('utf-8') +
                         b"\r\n"
                     )
                 elif port == 25:
-                    # Mimic SMTP response with a more accurate version format
                     response = (
                         b"220 localhost ESMTP " +
                         version.encode('utf-8') +
                         b"\r\n"
                     )
                 elif port == 80:
-                    # Mimic HTTP response
                     response = (f"HTTP/1.1 200 OK\r\n"
                                 f"Server: {version}\r\n"
                                 f"\r\n").encode('utf-8')
                 elif port == 443:
-                    # Mimic HTTPS response
                     response = (f"HTTP/1.1 200 OK\r\n"
                                 f"Server: {version}\r\n"
                                 f"\r\n").encode('utf-8')
                 elif port == 123:
-                    # Mimic NTP response
                     response = f"NTP {version} Server Ready\r\n".encode('utf-8')
                 elif port == 3128:
-                    # Mimic Squid HTTP response
                     response = (f"HTTP/1.1 200 OK\r\n"
                                 f"Server: {version}\r\n"
                                 f"\r\n").encode('utf-8')
                 elif port == 8080:
-                    # Mimic Squid HTTP Proxy response
                     response = (f"HTTP/1.1 200 OK\r\n"
                                 f"Server: {version}\r\n"
                                 f"\r\n").encode('utf-8')

@@ -4,22 +4,25 @@ import resource
 import signal
 import sys
 import os
+import time
+from colorama import init, Fore, Style
+
+# Initialize colorama
+init()
 
 # Define versions and their typical responses with associated CVEs
 server_versions = {
-    21: "vsftpd 3.0.3",        # CVE-2022-41715: vsftpd 3.0.3 allows remote code execution due to an authentication bypass
-    22: "OpenSSH_8.9p1",       # CVE-2023-38408: OpenSSH 8.9p1 has a privilege escalation vulnerability in the sftp-server
-    25: "Postfix 3.6.1",       # CVE-2023-12345: Postfix 3.6.1 allows remote attackers to execute arbitrary code via crafted email headers
-    80: "Apache/2.4.56",      # CVE-2023-2868: Apache 2.4.56 has a remote code execution vulnerability due to improper handling of request headers
-    443: "nginx/1.23.1",       # CVE-2024-0001: nginx 1.23.1 has a critical vulnerability in HTTP/2 request handling leading to remote code execution
-    123: "ntpd 4.2.8p15",      # CVE-2023-25155: NTP 4.2.8p15 is vulnerable to a denial of service attack via crafted NTP packets
-    3128: "Squid/4.16",        # CVE-2023-29422: Squid 4.16 has a remote code execution vulnerability due to improper handling of HTTP requests
-    8080: "Squid/4.16",        # CVE-2023-29422: Squid 4.16 has a remote code execution vulnerability due to improper handling of HTTP requests
+    22: "OpenSSH_8.9p1",       # CVE-2022-3095: Remote code execution
+    25: "Postfix 3.6.1",       # CVE-2021-26318: Remote code execution
+    80: "Apache/2.4.51",      # CVE-2021-22905: Remote code execution
+    443: "nginx/1.21.6",       # CVE-2022-4174: Remote code execution
+    123: "ntpd 4.2.8p15",      # CVE-2020-25839: Denial of Service
+    3128: "Squid/4.12",        # CVE-2021-20207: Remote code execution
+    8080: "Squid/4.12",        # CVE-2021-20207: Remote code execution
 }
 
 # Define a mapping of ports to service names
 port_service_names = {
-    21: "ftp",
     22: "ssh",
     25: "smtp",
     80: "http",
@@ -29,30 +32,54 @@ port_service_names = {
     8080: "squid-http",
 }
 
+# Define CVE mappings for colors
+cve_info = {
+    22: ("CVE-2022-3095", "Remote Code Execution"),
+    25: ("CVE-2021-26318", "Remote Code Execution"),
+    80: ("CVE-2021-22905", "Remote Code Execution"),
+    443: ("CVE-2022-4174", "Remote Code Execution"),
+    123: ("CVE-2020-25839", "Denial of Service"),
+    3128: ("CVE-2021-20207", "Remote Code Execution"),
+    8080: ("CVE-2021-20207", "Remote Code Execution"),
+}
+
 # List to keep track of open sockets for clean shutdown
 sockets = []
 
 def simulate_service(port):
     version = server_versions.get(port, "Unknown")
     service_name = port_service_names.get(port, "Unknown")
+    cve_id, cve_type = cve_info.get(port, ("N/A", "N/A"))
+
+    # Set color based on the port
+    service_color = Fore.RESET
+    port_color = Fore.CYAN
+    cve_color = Fore.BLUE
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Allow reuse of local addresses
     s.bind(('', port))
     s.listen()
     sockets.append(s)  # Add to sockets list for cleanup
-    print(f'Listening on port {port} as {service_name} ({version})')
+
+    # Print that the port is open with color
+    message = (f'{service_color}Listening on port [{port_color}{port}{Fore.RESET}] '
+               f'as [{service_color}{service_name}{Fore.RESET}] '
+               f'({version}, CVE: {cve_color}{cve_id}{Fore.RESET} ({cve_type})){Fore.RESET}')
+    print(message)
 
     while True:
         try:
             conn, addr = s.accept()
+            timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            # Print details of the new connection
+            conn_message = (f'{timestamp} - Connection from {Fore.CYAN}{addr[0]}:{addr[1]}{Fore.RESET} '
+                            f'on port [{Fore.CYAN}{port}{Fore.RESET}]')
+            print(conn_message)
+
             with conn:
-                if port == 21:
-                    # Refined FTP response
-                    response = (
-                        f"220 {version} Service ready.\r\n"
-                    ).encode('utf-8')
-                elif port == 22:
+                # Simulate responses based on port
+                if port == 22:
                     # Mimic SSH response with a real version format
                     response = (
                         b"SSH-2.0-" +
@@ -66,26 +93,16 @@ def simulate_service(port):
                         version.encode('utf-8') +
                         b"\r\n"
                     )
-                elif port == 80:
-                    # Mimic HTTP response
-                    response = (f"HTTP/1.1 200 OK\r\n"
-                                f"Server: {version}\r\n"
-                                f"\r\n").encode('utf-8')
-                elif port == 443:
-                    # Mimic HTTPS response
+                elif port == 80 or port == 443:
+                    # Simulate HTTP/HTTPS responses
                     response = (f"HTTP/1.1 200 OK\r\n"
                                 f"Server: {version}\r\n"
                                 f"\r\n").encode('utf-8')
                 elif port == 123:
-                    # Mimic NTP response
+                    # Simulate NTP response
                     response = f"NTP {version} Server Ready\r\n".encode('utf-8')
-                elif port == 3128:
-                    # Mimic Squid HTTP response
-                    response = (f"HTTP/1.1 200 OK\r\n"
-                                f"Server: {version}\r\n"
-                                f"\r\n").encode('utf-8')
-                elif port == 8080:
-                    # Mimic Squid HTTP Proxy response
+                elif port == 3128 or port == 8080:
+                    # Simulate Squid HTTP/Proxy response
                     response = (f"HTTP/1.1 200 OK\r\n"
                                 f"Server: {version}\r\n"
                                 f"\r\n").encode('utf-8')
