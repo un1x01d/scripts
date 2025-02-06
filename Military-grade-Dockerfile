@@ -1,0 +1,40 @@
+# Use Amazon Corretto 17 on Alpine as the base image
+FROM amazoncorretto:17-alpine
+
+# Upgrade OS packages for security patches
+RUN apk update && apk upgrade --no-cache
+
+# Create a non-root user and group with no shell access
+RUN addgroup -S appgroup && adduser -S -D -H -G appgroup appuser
+
+# Define secure working directory
+WORKDIR /app
+
+# Copy only the pre-built JAR file into the container
+COPY --chown=appuser:appgroup app.jar /app/app.jar
+
+# Set strict file permissions
+RUN chmod 0755 /app/app.jar && chmod -R go-rwx /app
+
+# Remove package manager and unnecessary files
+RUN rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
+
+# Drop ALL Linux capabilities (prevent privilege escalation)
+RUN apk add --no-cache libcap && \
+    setcap -r /usr/bin/java && \
+    apk del --purge libcap
+
+# Disable core dumps to prevent memory leak attacks
+RUN echo '* hard core 0' >> /etc/security/limits.conf
+
+# Enforce execution with least privilege
+USER appuser
+
+# Expose only necessary ports
+EXPOSE 8080/tcp
+
+# Enforce read-only filesystem at runtime
+CMD ["--read-only"]
+
+# Secure JVM settings for better memory & security
+ENTRYPOINT ["java", "-XX:+UseG1GC", "-XX:+HeapDumpOnOutOfMemoryError", "-jar", "/app/app.jar"]
